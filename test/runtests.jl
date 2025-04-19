@@ -4,7 +4,7 @@ using Test
 @testset "SP_IRK.jl" begin
     
     # Test the generation of RK coefficients via the generate_rkcoeff function
-    @testset "generate_rkcoeff" begin
+    @testset "generate_rkcoeff_sizes" begin
         # Test for Gauss-Legendre
         A, b, c, X, ev, D = generate_rkcoeff(3, "gauss")
         @test size(A) == (3, 3)
@@ -26,6 +26,46 @@ using Test
 
         # Test for RadauIIA
         A, b, c, M, B, W, D = generate_rkcoeff(4, "radauIIA")
+        @test size(A) == (4, 4)
+        @test size(b) == (4,)
+        @test size(c) == (4,)
+        @test size(M) == (4, 4)
+        @test size(B) == (4, 4)
+        @test size(W) == (4, 4)
+        @test size(D) == (4, 4)
+
+        # Test for LobattoIIIA
+        A, b, c, M, B, W, D = generate_rkcoeff(4, "lobattoIIIA")
+        @test size(A) == (4, 4)
+        @test size(b) == (4,)
+        @test size(c) == (4,)
+        @test size(M) == (4, 4)
+        @test size(B) == (4, 4)
+        @test size(W) == (4, 4)
+        @test size(D) == (4, 4)
+
+        # Test for LobattoIIIB
+        A, b, c, M, B, W, D = generate_rkcoeff(4, "lobattoIIIB")
+        @test size(A) == (4, 4)
+        @test size(b) == (4,)
+        @test size(c) == (4,)
+        @test size(M) == (4, 4)
+        @test size(B) == (4, 4)
+        @test size(W) == (4, 4)
+        @test size(D) == (4, 4)
+        
+        # Test for LobattoIIIC
+        A, b, c, M, B, W, D = generate_rkcoeff(4, "lobattoIIIC")
+        @test size(A) == (4, 4)
+        @test size(b) == (4,)
+        @test size(c) == (4,)
+        @test size(M) == (4, 4)
+        @test size(B) == (4, 4)
+        @test size(W) == (4, 4)
+        @test size(D) == (4, 4)
+
+        # Test for LobattoIIID
+        A, b, c, M, B, W, D = generate_rkcoeff(4, "lobattoIIID")
         @test size(A) == (4, 4)
         @test size(b) == (4,)
         @test size(c) == (4,)
