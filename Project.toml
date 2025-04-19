@@ -1,0 +1,13 @@
+name = "SP_IRK"
+uuid = "1f30a8fe-09c3-4f49-997a-28583bc83015"
+authors = ["Fabio Durastante <fabio.durastante@unipi.it>", "Mariarosa Mazza <mariarosa.mazza@uniroma2.it>"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.6.7"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
