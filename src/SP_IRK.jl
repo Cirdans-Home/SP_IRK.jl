@@ -14,8 +14,11 @@ module SP_IRK
     using RungeKutta
     using FastGaussQuadrature
     using QuadGK
+    using MatrixEquations
 
     include("schemes.jl")
+    include("krylov.jl")
+    include("solver.jl")
 
-    export generate_rkcoeff
+    export generate_rkcoeff, kpik_sylv_oneside_prealloc, proj_sylvesterc_block_prealloc, proj_sylvesterc_prealloc, rk_lin_thr_solve_mex, rk_nlin_thr_solve_mex
 end
