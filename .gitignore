@@ -5,3 +5,7 @@
 /docs/Manifest*.toml
 /docs/build/
 *.vtu
+exec_t*_s*.sh
+*.txt
+*.out
+*.err
