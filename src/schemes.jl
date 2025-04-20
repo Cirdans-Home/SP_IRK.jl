@@ -233,3 +233,17 @@ function orthonormal_legendre(c, s)
     return W
 
 end
+""" 
+Compute the low-rank decomposition of the right-hand side of the Sylvester equation
+via the QR factorization
+"""
+
+function build_rhs_qr(cL, cR, C2t, C1t)
+
+    Q1, R1 = qr(reduce(hcat, [cL, C2t]))
+    Q2, R2 = qr(reduce(hcat, [cR, C1t]))
+    C1hat = Q1 * R1
+    C2hat = Q2 * R2
+
+    return C1hat, C2hat
+end

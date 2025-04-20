@@ -164,7 +164,7 @@ The solution is computed using a one-sided Krylov projection algorithm with
 This function is optimized for cases where `L` and `M` are large and sparse, 
 and the right-hand side has a low-rank structure.
 """
-function proj_sylvesterc_block_prealloc(h::Float64, M::AbstractMatrix, L::AbstractMatrix, At::AbstractMatrix, C1::AbstractMatrix, C2::AbstractMatrix, maxit::Integer, eps::Float64, V::AbstractMatrix, H::AbstractMatrix)
+function proj_sylvesterc_block_prealloc(h::Float64, M::AbstractMatrix, L, At::AbstractMatrix, C1::AbstractMatrix, C2::AbstractMatrix, maxit::Integer, eps::Float64, V::AbstractMatrix, H::AbstractMatrix)
     # Rank of rhs
     rk = size(C1, 2)
     # First Krylov vector is the right-hand side normalized
@@ -240,7 +240,7 @@ and the Bartels and Stewart algorithm is applied to the projected matrix.
 This implementation is optimized for performance by leveraging preallocated memory and efficient 
 algorithms for both the Krylov projection and the solution of the reduced Sylvester equation.
 """
-function proj_sylvesterc_prealloc(h::Float64, M::AbstractMatrix, L::AbstractMatrix, A::AbstractMatrix, u::AbstractArray, v::AbstractArray, maxit::Integer, eps::Float64, V::AbstractMatrix, H::AbstractMatrix)
+function proj_sylvesterc_prealloc(h::Float64, M::AbstractMatrix, L, A::AbstractMatrix, u::AbstractArray, v::AbstractArray, maxit::Integer, eps::Float64, V::AbstractMatrix, H::AbstractMatrix)
     # First Krylov vector is the right-hand side normalized
     normb = sqrt(dot(v, v) * dot(u, u))
     beta = norm(u)

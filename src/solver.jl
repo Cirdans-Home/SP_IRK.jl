@@ -197,8 +197,8 @@ function rk_lin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,L::SparseMatrixCSC,
         end   
         
         # Preallocate the matrices for the Sylvester equation
-        VV = zeros(m,sylvester_maxit*rkcor)
-        HH = zeros(sylvester_maxit*rkcor+1,sylvester_maxit*rkcor)
+        VV = zeros(m,sylvester_maxit*6)
+        HH = zeros(sylvester_maxit*6+1,sylvester_maxit*6)
 
         is = zeros(s); is[s] = 1.0;
 
