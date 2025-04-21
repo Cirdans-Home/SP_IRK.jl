@@ -8,8 +8,8 @@ projection method with preallocated memory for efficiency.
 - `Am::Function`: A function that computes the action of the matrix `A` on a vector.
 - `As::Function`: A function that computes the action of the matrix `A^{-1}` on a vector.
 - `B::AbstractMatrix`: The matrix `B` in the Sylvester equation.
-- `rhs::AbstractMatrix`: The first low-rank right-hand side of the Sylvester equation.
-- `rhs2::AbstractMatrix`: The second low-rank right-hand side of the Sylvester equation.
+- `rhs::AbstractVector`: The first low-rank right-hand side of the Sylvester equation.
+- `rhs2::AbstractVector`: The second low-rank right-hand side of the Sylvester equation.
 - `m::Integer`: The maximum number of Krylov iterations.
 - `tol::Float64`: The tolerance for convergence.
 - `U::AbstractMatrix`: The Krylov basis matrix, which will be filled during the computation.
@@ -25,7 +25,7 @@ preallocation of memory is necessary to avoid repeated allocations during
 iterative computations. Ensure that the dimensions of `A`, `B`, `C`, and `X` 
 are compatible with the Sylvester equation.
 """
-function kpik_sylv_oneside_prealloc(Am::Function, As::Function, B::AbstractMatrix, rhs1::AbstractMatrix, rhs2::AbstractMatrix, m::Integer, tol::Float64, U::AbstractMatrix, H::AbstractMatrix)
+function kpik_sylv_oneside_prealloc(Am::Function, As::Function, B::AbstractMatrix, rhs1::AbstractVector, rhs2::AbstractMatrix, m::Integer, tol::Float64, U::AbstractMatrix, H::AbstractMatrix)
     nrmb1 = norm(rhs1)
     nrmb2 = norm(rhs2)
     normb = sqrt(nrmb1 * nrmb2)
