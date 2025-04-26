@@ -348,29 +348,35 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
         Massfact = factorize(Mass) # Factorize Mass
         VV = zeros(m,sylvester_maxit*2)
         HH = zeros((sylvester_maxit+1)*2,sylvester_maxit*2)
+        Vp = zeros(m,2*sylvester_maxit)
+        Hp = zeros(2*sylvester_maxit+1,2*sylvester_maxit)
 
 
         for i = 1:length(t)-1
             ti = t[i];
 
             # Use simplified Newton to solve for the stages
-            L = JTheta(ti,y[:,i]) # Compute the Jacobian of Theta at the current time and state
-            Lfact = factorize(L)  # Factorize L (I need it for the Sylvester equation)
-            lhs = fetch.([Threads.@spawn factorize(Mass + h*ev[j]*L) for j in 1:s])
             K .= 0.0
-            Am(x) = (Lfact\(Mass*x))
-            As(x) = (Massfact\(L*x))
-            println("Time step: ", i)
+            println("Time step: ", i, " of ", length(t)-1, " t = ", ti, " h = ", h)
             for p = 1:newton_maxit
+                # Compute the Jacobian
+                L = JTheta(ti+c[1]*h,K[:,1])/s # Compute the Jacobian of Theta at the current time and state
+                for j = 2:s
+                    L += JTheta(ti + c[j]*h,K[:,j])/s
+                end
+                Lfact = factorize(L)  # Factorize L (I need it for the Sylvester equation)
+                lhs = fetch.([Threads.@spawn factorize(Mass + h*ev[j]*L) for j in 1:s])
+                Am(x) = (Lfact\(Mass*x))
+                As(x) = (Massfact\(L*x))
                 # Assemble right-hand side
                 for j in eachindex(c)
                     F[:,j] = Mass*(K[:,j] - y[:,i])  + h*sum(A[j,k]*Theta(ti + c[k]*h,K[:,k]) for k=1:s);
                 end
 
                 normF = norm(F)
-
+                # println("Newton iteration: ", p, " Residual: ", normF)
                 if  normF < tol_newton
-                    println("Newton iteration: ", p, " Residual: ", normF)
+                    println("Converged in ", p, " iterations, norm = ", normF)
                     itersyl[i] = round(itersyl[i]/p)
                     ressyl[i] = ressyl[i]/p
                     break
@@ -390,9 +396,17 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
                 Dnewt_sol = real(Dnewt);
 
                 # Solve the Sylvester equation
-                E,iter,res = kpik_sylv_oneside_prealloc(Am, As, h*At, -h*Dnewt_sol*b/2.0,es, m, 1e-10,VV,HH)
-                itersyl[i] = 2*itersyl[i] + iter
-                ressyl[i] = ressyl[i] + res                 
+                try
+                    E,iter,res = kpik_sylv_oneside_prealloc(Am, As, h*At, -h*Dnewt_sol*b/2.0,es, sylvester_maxit, 1e-10,VV,HH)
+                    itersyl[i] = 2*itersyl[i] + iter
+                    ressyl[i] = ressyl[i] + res                 
+                catch
+                    println("Rational Sylvester equation failed to converge: switching to polynomial iteration")
+                    E,iter,res = proj_sylvesterc(h,Mass,Lfact,At,-Dnewt_sol*b/2.0,es,m,1e-10)
+                    println("Polynomial Sylvester equation converged in ", iter, " iterations, norm = ", res)
+                    itersyl[i] = itersyl[i] + iter
+                    ressyl[i] = ressyl[i] + res
+                end
 
                 # Perform the Newton update on the K 
                 K = K - (Dnewt_sol + E)

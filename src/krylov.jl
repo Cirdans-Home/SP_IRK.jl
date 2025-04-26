@@ -164,7 +164,7 @@ The solution is computed using a one-sided Krylov projection algorithm with
 This function is optimized for cases where `L` and `M` are large and sparse, 
 and the right-hand side has a low-rank structure.
 """
-function proj_sylvesterc_block_prealloc(h::Float64, M::AbstractMatrix, L, At::AbstractMatrix, C1::AbstractMatrix, C2::AbstractMatrix, maxit::Integer, eps::Float64, V::AbstractMatrix, H::AbstractMatrix)
+function proj_sylvesterc_block_prealloc(h::Float64, M::AbstractMatrix, L, At::AbstractMatrix, C1::AbstractVector, C2::AbstractMatrix, maxit::Integer, eps::Float64, V::AbstractMatrix, H::AbstractMatrix)
     # Rank of rhs
     rk = size(C1, 2)
     # First Krylov vector is the right-hand side normalized
@@ -241,6 +241,80 @@ This implementation is optimized for performance by leveraging preallocated memo
 algorithms for both the Krylov projection and the solution of the reduced Sylvester equation.
 """
 function proj_sylvesterc_prealloc(h::Float64, M::AbstractMatrix, L, A::AbstractMatrix, u::AbstractArray, v::AbstractArray, maxit::Integer, eps::Float64, V::AbstractMatrix, H::AbstractMatrix)
+    # First Krylov vector is the right-hand side normalized
+    normb = sqrt(dot(v, v) * dot(u, u))
+    beta = norm(u)
+    V[:, 1] = u / beta
+    e1 = zeros(maxit, 1)
+    e1[1] = beta
+    # Loop up to maxit
+    for j = 1:maxit-1
+        # Apply L to the current Krylov vector
+        w = (L \ (M * (V[:, j] / h)))
+        # Orthogonalize the new vector against the previous ones
+        for i = 1:j
+            H[i, j] = dot(V[:, i], w)
+            w = w - H[i, j] * V[:, i]
+        end
+        # Normalize the new vector
+        H[j+1, j] = norm(w)
+        V[:, j+1] = w / H[j+1, j]
+        # Solve the projected Sylvester equation
+        Y = sylvc(H[1:j, 1:j], A, e1[1:j] * v')
+        # Compute the residual
+        res = abs(H[j+1, j]) * norm(Y[j, :], 2) / normb
+        # Check for convergence
+        if res < eps
+            X = V[:, 1:j] * Y
+            return X, j, res
+        end
+    end
+
+    # We did not converge within maxit
+    Y = sylvc(H[1:maxit, 1:maxit], A, e1[1:maxit] * v')
+    X = V[:, 1:maxit] * Y
+    res = norm((L \ (M * X)) / h + X * A - u * v')
+
+    return X, maxit, res
+
+end
+"""
+    solve_sylvester(V, H, L, M, A, u, v, h)
+
+Solve the Sylvester equation:
+
+    h⁻¹ L⁻¹ M X + X Aᵀ = uvᵀ
+
+using preallocated memory for `V` and `H`. This function is designed for cases where `L` and `M` 
+are large and sparse matrices, `A` is a small and dense matrix, and the right-hand side is rank-1.
+
+The solution is computed using a one-sided Krylov projection algorithm with `h⁻¹ L⁻¹ M` and `u`, 
+and the Bartels and Stewart algorithm is applied to the projected matrix.
+
+# Arguments
+- `V`: Preallocated matrix to store the Krylov basis.
+- `H`: Preallocated matrix to store the Hessenberg matrix from the Krylov projection.
+- `L`: Sparse matrix used in the left-hand side of the equation.
+- `M`: Sparse matrix used in the left-hand side of the equation.
+- `A`: Small dense matrix used in the right-hand side of the equation.
+- `u`: Vector defining the rank-1 right-hand side.
+- `v`: Vector defining the rank-1 right-hand side.
+- `h`: Scalar factor applied to the left-hand side.
+
+# Returns
+- `X`: Solution matrix to the Sylvester equation.
+- The number of iterations performed.
+- The residual norm of the solution.
+
+# Notes
+This implementation is optimized for performance by leveraging preallocated memory and efficient 
+algorithms for both the Krylov projection and the solution of the reduced Sylvester equation.
+"""
+function proj_sylvesterc(h::Float64, M::AbstractMatrix, L, A::AbstractMatrix, u::AbstractArray, v::AbstractArray, maxit::Integer, eps::Float64)
+    # Allocate memory for Krylov basis and Hessenberg matrix
+    n = size(M, 1)
+    V = zeros(n, maxit)
+    H = zeros(maxit+1, maxit)
     # First Krylov vector is the right-hand side normalized
     normb = sqrt(dot(v, v) * dot(u, u))
     beta = norm(u)

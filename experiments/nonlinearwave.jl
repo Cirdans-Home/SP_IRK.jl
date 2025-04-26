@@ -5,6 +5,7 @@ using Base.Threads
 # Print animation of the solution
 using Plots 
 using LaTeXStrings
+using BenchmarkTools
 
 println("Running Non Linear Wave sample with: ", ARGS, " arguments, nthreads: ", nthreads())
 
@@ -23,7 +24,7 @@ beta = 10.0
 x = -0.5:dx:0.5
 tspan = [0.0, 1.0]
 nx = length(x)
-nt = 20*nx
+nt = 5*nx
 println("Number of time steps: ", nt)
 println("Number of space steps: ", nx)
 
