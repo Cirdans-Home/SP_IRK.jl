@@ -291,7 +291,7 @@ n : Int
 y0 : Array{Float64, 1}
     The initial condition of the ODE system
 """
-function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan,n,y0,sylvester_maxit=50)
+function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan,n,y0,sylvester_maxit=50,computed_steps=n)
 
     # First we check that the number of spawned threads is less or equal than the number of stages of the method
     if nthreads() > s
@@ -334,8 +334,8 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
     Dnewt_sol = zeros(Float64,m,s); # Preallocated for speed
     iter = 0                        # Preallocated for speed
     res = 0.0                       # Preallocated for speed
-    itersyl = zeros(Int64,n)
-    ressyl = zeros(Float64,n)
+    itersyl = zeros(Int64,computed_steps)
+    ressyl = zeros(Float64,computed_steps)
 
     newton_maxit = 100
     tol_newton = 1e-10
@@ -348,11 +348,11 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
         Massfact = factorize(Mass) # Factorize Mass
         VV = zeros(m,sylvester_maxit*2)
         HH = zeros((sylvester_maxit+1)*2,sylvester_maxit*2)
-        Vp = zeros(m,2*sylvester_maxit)
-        Hp = zeros(2*sylvester_maxit+1,2*sylvester_maxit)
+        # Vp = zeros(m,2*sylvester_maxit)
+        # Hp = zeros(2*sylvester_maxit+1,2*sylvester_maxit)
 
 
-        for i = 1:length(t)-1
+        for i = 1:computed_steps
             ti = t[i];
 
             # Use simplified Newton to solve for the stages
