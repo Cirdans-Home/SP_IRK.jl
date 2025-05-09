@@ -68,8 +68,8 @@ end
 Theta(t,y) = -odefun(y,0,t)
 JTheta(t,y) = jfun(y,0,t,beta,B,nx)
 
-t,y,itersyl,ressyl = rk_nlin_thr_solve_mex(method,s,M,Theta,JTheta,tspan,nt,y0,50,100)
-@btime t,y,itersyl,ressyl = rk_nlin_thr_solve_mex($method,$s,$M,$Theta,$JTheta,$tspan,$nt,$y0,50,100)
+t,y,itersyl,ressyl = rk_nlin_thr_solve_mex(method,s,M,Theta,JTheta,tspan,nt,y0,50,100,true)
+@btime t,y,itersyl,ressyl = rk_nlin_thr_solve_mex($method,$s,$M,$Theta,$JTheta,$tspan,$nt,$y0,50,100,false)
 
 for i in eachindex(itersyl)
     println("Iterations: ", itersyl[i], " Residual: ", ressyl[i])

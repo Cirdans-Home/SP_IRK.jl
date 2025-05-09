@@ -291,7 +291,7 @@ n : Int
 y0 : Array{Float64, 1}
     The initial condition of the ODE system
 """
-function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan,n,y0,sylvester_maxit=50,computed_steps=n)
+function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan,n,y0,sylvester_maxit=50,computed_steps=n,verbose=false)
 
     # First we check that the number of spawned threads is less or equal than the number of stages of the method
     if nthreads() > s
@@ -357,7 +357,9 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
 
             # Use simplified Newton to solve for the stages
             K .= 0.0
-            println("Time step: ", i, " of ", length(t)-1, " t = ", ti, " h = ", h)
+            if verbose
+                println("Time step: ", i, " of ", length(t)-1, " t = ", ti, " h = ", h)
+            end
             for p = 1:newton_maxit
                 # Compute the Jacobian
                 L = JTheta(ti+c[1]*h,K[:,1])/s # Compute the Jacobian of Theta at the current time and state
@@ -376,7 +378,9 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
                 normF = norm(F)
                 # println("Newton iteration: ", p, " Residual: ", normF)
                 if  normF < tol_newton
-                    println("Converged in ", p, " iterations, norm = ", normF)
+                    if verbose 
+                        println("Converged in ", p, " iterations, norm = ", normF)
+                    end
                     itersyl[i] = round(itersyl[i]/p)
                     ressyl[i] = ressyl[i]/p
                     break
@@ -401,9 +405,13 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
                     itersyl[i] = 2*itersyl[i] + iter
                     ressyl[i] = ressyl[i] + res                 
                 catch
-                    println("Rational Sylvester equation failed to converge: switching to polynomial iteration")
+                    if verbose
+                        println("Rational Sylvester equation failed to converge: switching to polynomial iteration")
+                    end
                     E,iter,res = proj_sylvesterc(h,Mass,Lfact,At,-Dnewt_sol*b/2.0,es,m,1e-10)
-                    println("Polynomial Sylvester equation converged in ", iter, " iterations, norm = ", res)
+                    if verbose
+                        println("Polynomial Sylvester equation converged in ", iter, " iterations, norm = ", res)
+                    end
                     itersyl[i] = itersyl[i] + iter
                     ressyl[i] = ressyl[i] + res
                 end
