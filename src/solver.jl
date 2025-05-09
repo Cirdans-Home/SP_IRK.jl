@@ -320,7 +320,7 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
     t = LinRange(t0,tf,n+1)
     # Allocate space for the solution matrix
     m = length(y0)
-    y = zeros(m, n+1)
+    y = zeros(m, computed_steps+1)
     y[:,1] = y0
 
     # Build a sparse identity matrix of size m
@@ -369,8 +369,8 @@ function rk_nlin_thr_solve_mex(method,s,Mass::SparseMatrixCSC,Theta,JTheta,tspan
                 Am(x) = (Lfact\(Mass*x))
                 As(x) = (Massfact\(L*x))
                 # Assemble right-hand side
-                for j in eachindex(c)
-                    F[:,j] = Mass*(K[:,j] - y[:,i])  + h*sum(A[j,k]*Theta(ti + c[k]*h,K[:,k]) for k=1:s);
+                Threads.@threads for j in eachindex(c)
+                    @inbounds F[:,j] = Mass*(K[:,j] - y[:,i])  + h*sum(A[j,k]*Theta(ti + c[k]*h,K[:,k]) for k=1:s);
                 end
 
                 normF = norm(F)
