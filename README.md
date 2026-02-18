@@ -27,8 +27,23 @@ To treat nonlinear problems the code adopts a simplified Newton method.
 ## Reference
 
 If you end up using some of this routines or the ideas contained here, please cite:
-```
-F. Durastante, M. Mazza. Stage-Parallel Implicit Runge--Kutta methods via low-rank matrix equation corrections.
+```bibtex
+﻿@Article{DurastanteMazza2026,
+author={Durastante, Fabio
+and Mazza, Mariarosa},
+title={Stage-Parallel Implicit Runge--Kutta Methods Via Low-Rank Matrix Equation Corrections},
+journal={Journal of Scientific Computing},
+year={2026},
+month={Feb},
+day={18},
+volume={107},
+number={1},
+pages={4},
+abstract={Implicit Runge--Kutta (IRK) methods are highly effective for solving stiff ordinary differential equations (ODEs) but can be computationally expensive for large-scale problems due to the need of solving coupled algebraic equations at each step. This study improves IRK efficiency by leveraging parallelism to decouple stage computations and reduce communication overhead, specifically we stably decouple a perturbed version of the stage system of equations and recover the exact solution by solving a Sylvester matrix equation with an explicitly known low-rank right-hand side. Two IRK families---symmetric methods and collocation methods---are analyzed, with extensions to nonlinear problems using a simplified Newton method. Implementation details, shared memory parallel code, and numerical examples, particularly for ODEs from spatially discretized PDEs, demonstrate the efficiency of the proposed IRK technique.},
+issn={1573-7691},
+doi={10.1007/s10915-026-03185-z},
+url={https://doi.org/10.1007/s10915-026-03185-z}
+}
 ```
 
 
